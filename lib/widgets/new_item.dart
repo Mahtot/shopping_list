@@ -61,6 +61,14 @@ class _NewItemState extends State<NewItem> {
                   ),
                 ],
               ),
+              SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(child: const Text('Reset'), onPressed: () {}),
+                  ElevatedButton(child: const Text('Add Item'), onPressed:(){})
+                ],
+              ),
             ],
           ),
         ),
