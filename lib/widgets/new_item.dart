@@ -16,6 +16,7 @@ class _NewItemState extends State<NewItem> {
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
+
   void _saveItem() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -29,6 +30,7 @@ class _NewItemState extends State<NewItem> {
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
