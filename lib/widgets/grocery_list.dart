@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/grocery_item.dart';
 import 'package:shopping_list/widgets/new_item.dart';
 
@@ -13,22 +16,56 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   final List<GroceryItem> _groceryItems = [];
 
-  void _addItem() async {
-    var newItem = await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (ctx) => const NewItem()));
+  @override
+  void initState() {
+    _loadItems();
+    super.initState();
+  }
 
-    if (newItem == null) {
-      return;
+  void _loadItems() async {
+    final url = Uri.https(
+      'flutter-shopping-list-835e4-default-rtdb.firebaseio.com',
+      'shopping-list.json',
+    );
+
+    final response = await http.get(url);
+    final Map<String, dynamic> listData = json.decode(
+      response.body,
+    );
+    final List<GroceryItem> loadedItems = [];
+
+    for (var item in listData.entries) {
+      final category = categories.entries
+          .firstWhere(
+            (catItem) => catItem.value.title == item.value['category'],
+          )
+          .value;
+
+      loadedItems.add(
+        GroceryItem(
+          id: item.key,
+          name: item.value['name'],
+          quantity: item.value['quantity'],
+          category: category,
+        ),
+      );
     }
 
     setState(() {
-      _groceryItems.add(newItem);
+      _groceryItems.addAll(loadedItems);
     });
   }
 
+  void _addItem() async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (ctx) => const NewItem()));
+
+    _loadItems();
+  }
+
   void _removeItem(item) {
-    setState((){
+    setState(() {
       _groceryItems.remove(item);
     });
   }
@@ -41,7 +78,7 @@ class _GroceryListState extends State<GroceryList> {
       content = ListView.builder(
         itemCount: _groceryItems.length,
         itemBuilder: (ctx, index) => Dismissible(
-          key:ValueKey(_groceryItems[index].id),
+          key: ValueKey(_groceryItems[index].id),
           child: ListTile(
             title: Text(_groceryItems[index].name),
             leading: Container(
@@ -51,9 +88,9 @@ class _GroceryListState extends State<GroceryList> {
             ),
             trailing: Text(_groceryItems[index].quantity.toString()),
           ),
-          onDismissed:(direction){
+          onDismissed: (direction) {
             _removeItem(_groceryItems[index]);
-          } ,
+          },
         ),
       );
     }
